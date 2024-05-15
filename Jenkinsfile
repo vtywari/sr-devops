@@ -26,9 +26,12 @@ pipeline {
                 }
 
                 // Push the backend Docker image to Docker Hub using Docker Hub credentials
-                withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
-                    sh "docker login -u ${DOCKER_HUB_USERNAME} -p ${dockerhub}"
-                    sh "docker push ${DOCKER_HUB_USERNAME}/backend:latest"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
+                    // Login to Docker Hub
+                    sh "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
+
+                    // Push the frontend Docker image to Docker Hub
+                    sh "docker push ${DOCKER_HUB_USERNAME}/frontend:latest"
                 }
             }
         }
@@ -41,8 +44,11 @@ pipeline {
                 }
 
                 // Push the frontend Docker image to Docker Hub using Docker Hub credentials
-                withCredentials([string(credentialsId: 'dockerhub', variable: 'dockerhub')]) {
-                    sh "docker login -u ${DOCKER_HUB_USERNAME} -p ${dockerhub}"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_HUB_USERNAME', passwordVariable: 'DOCKER_HUB_PASSWORD')]) {
+                    // Login to Docker Hub
+                    sh "docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}"
+
+                    // Push the frontend Docker image to Docker Hub
                     sh "docker push ${DOCKER_HUB_USERNAME}/frontend:latest"
                 }
             }
