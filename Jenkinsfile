@@ -13,7 +13,9 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main' , url: 'https://github.com/vtywari/sr-devops.git'
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']],
+                          userRemoteConfigs: [[url: 'https://github.com/vtywari/sr-devops.git',
+                          credentialsId: 'github']]])
             }
         }
          stage("Build and Push Backend Image") {
