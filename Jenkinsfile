@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']],
+                checkout([$class: 'git', branches: [[name: '*/main']],
                           userRemoteConfigs: [[url: 'https://github.com/vtywari/sr-devops.git',
                           credentialsId: 'github']]])
             }
