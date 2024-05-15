@@ -1,0 +1,60 @@
+---
+- name: Provision Kubernetes Cluster and Deploy Application
+  hosts: kubernetes_nodes
+  become: true  # Run tasks with sudo privileges
+
+  tasks:
+    - name: Update package cache and install dependencies
+      apt:
+        update_cache: yes
+        name: ['apt-transport-https', 'curl', 'software-properties-common']
+
+    - name: Add Kubernetes apt key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add Kubernetes apt repository
+      apt_repository:
+        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+
+    - name: Install Kubernetes components
+      apt:
+        update_cache: yes
+        name: "{{ item }}"
+      loop:
+        - kubelet
+        - kubeadm
+        - kubectl
+
+    - name: Initialize Kubernetes cluster (master node only)
+      command: kubeadm init
+      when: inventory_hostname == groups['kubernetes_master'][0]
+
+    - name: Copy Kubernetes configuration to user's home directory
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: $HOME/.kube/config
+        remote_src: yes
+      become_user: "{{ ansible_user }}"
+
+    - name: Install CNI plugin (e.g., Calico)
+      when: inventory_hostname == groups['kubernetes_master'][0]
+      kubectl:
+        name: calico
+        state: present
+        kubeconfig: $HOME/.kube/config
+
+    - name: Join worker nodes to the Kubernetes cluster
+      command: "{{ hostvars[item].kube_join_command.stdout }}"
+      when: inventory_hostname in groups['kubernetes_workers']
+      loop: "{{ groups['kubernetes_master'] }}"
+      ignore_errors: yes
+
+    - name: Deploy containerized application (e.g., with Helm)
+      helm:
+        name: my-app
+        chart_ref: stable/my-app
+        state: present
+        kubeconfig: $HOME/.kube/config
