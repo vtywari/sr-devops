@@ -53,21 +53,17 @@ pipeline {
         stage("Deploy to Kubernetes") {
             steps {
                 // SSH into the Kubernetes server and deploy manifests
-                script {
-                    def remote = [
-                        name: 'K8S master',
-                        host: "${K8S_SERVER_HOST}",
-                        user: "${K8S_SERVER_USER}",
-                        password: "${K8S_SERVER_PASSWORD}",
-                        allowAnyHosts: true
-                    ]
+                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
+                    script {
+                        // Copy the Kubernetes deployment manifests to the Kubernetes server
+                        sh "scp -o StrictHostKeyChecking=no k8s/backend-deployment.yaml ${K8S_SERVER_USER}@${K8S_SERVER_HOST}:~/backend-deployment.yaml"
+                        sh "scp -o StrictHostKeyChecking=no k8s/frontend-deployment.yaml ${K8S_SERVER_USER}@${K8S_SERVER_HOST}:~/frontend-deployment.yaml"
 
-                    sshPut remote: remote, from: 'k8s/backend-deployment.yaml', into: '.'
-                    sshPut remote: remote, from: 'k8s/frontend-deployment.yaml', into: '.'
-
-                    sshCommand remote: remote, command: 'kubectl apply -f backend-deployment.yaml'
-                    sshCommand remote: remote, command: 'kubectl apply -f frontend-deployment.yaml'
-                }
+                        // Apply the Kubernetes deployment manifests on the Kubernetes server using kubectl
+                        sh "ssh -o StrictHostKeyChecking=no ${K8S_SERVER_USER}@${K8S_SERVER_HOST} 'kubectl apply -f ~/backend-deployment.yaml'"
+                        sh "ssh -o StrictHostKeyChecking=no ${K8S_SERVER_USER}@${K8S_SERVER_HOST} 'kubectl apply -f ~/frontend-deployment.yaml'"
+                    }
+					}
             }
         }
     }
