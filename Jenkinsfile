@@ -53,7 +53,7 @@ pipeline {
         stage("Deploy to Kubernetes") {
             steps {
                 // SSH into the Kubernetes server and deploy manifests
-                 sshagent(credentials: [SSH_CREDENTIALS_ID]) {
+                 sshagent(credentials: ['admin']) {
                     script {
                         // Copy the Kubernetes deployment manifests to the Kubernetes server
                         sh "scp -o StrictHostKeyChecking=no k8s/backend-deployment.yaml ${K8S_SERVER_USER}@${K8S_SERVER_HOST}:~/backend-deployment.yaml"
