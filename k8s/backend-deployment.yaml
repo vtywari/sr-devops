@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: your-docker-username/backend:latest
+        image: vikastiwari/backend:latest
         ports:
         - containerPort: 5000
 ---

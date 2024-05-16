@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: your-docker-username/frontend:latest
+        image: vikastiwari/frontend:latest
         ports:
         - containerPort: 5000
 ---
